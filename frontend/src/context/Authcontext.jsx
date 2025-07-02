@@ -3,8 +3,9 @@ import React, { createContext } from 'react'
 export const authDataContext=createContext();
 
 const AuthContext = ({children}) => {
-
-    const serverUrl="http://localhost:3000"
+  const serverUrl = import.meta.env.MODE === "development"
+  ? "http://localhost:3000"
+  : "";
 
     const value={
         serverUrl
