@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ReactMarkdown from "react-markdown"; // ✅ import markdown parser
+import ReactMarkdown from "react-markdown";
 
 const Result = () => {
   const [result, setResult] = useState("");
@@ -9,7 +9,7 @@ const Result = () => {
   useEffect(() => {
     const r = localStorage.getItem("result");
     if (!r) navigate("/");
-    else setResult(r);
+    else setResult(JSON.parse(r));
   }, []);
 
   return (
@@ -17,7 +17,6 @@ const Result = () => {
       <div className="bg-white max-w-2xl w-full p-6 rounded-2xl shadow-md">
         <h1 className="text-2xl font-bold mb-4 text-center">Quiz Evaluation</h1>
 
-        {/* ✅ Render markdown with styles */}
         <div className="prose prose-sm max-w-none text-gray-800">
           <ReactMarkdown>{result}</ReactMarkdown>
         </div>

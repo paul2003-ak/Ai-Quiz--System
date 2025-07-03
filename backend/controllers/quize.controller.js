@@ -18,8 +18,8 @@ export const getQuiz = async (req, res) => {
   }
 };
 
-// SUBMIT 
-// SUBMIT
+// SUBMIT QUIZ
+
 export const submitQuiz = async (req, res) => {
   const { questionsWithUserAnswers } = req.body;
 
@@ -29,14 +29,32 @@ export const submitQuiz = async (req, res) => {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
-    const model = genAI.getGenerativeModel({
-      model: "models/gemini-1.5-flash", 
-    });
+    const prompt = `
+Evaluate the user's answers for the following MCQ quiz. Count how many are correct and how many are wrong. Then give a final score out of ${questionsWithUserAnswers.length}. After that, for each question, mention:
+- The question
+- What user answered
+- What was the correct answer
+- Whether it was correct or not
 
-    const prompt = `Evaluate the following quiz answers. Tell me how many are correct and wrong, and also give score out of ${questionsWithUserAnswers.length}. Here's the data:\n${JSON.stringify(
-      questionsWithUserAnswers
-    )}`;
+Respond in detailed markdown format:
+
+### 📝 Quiz Evaluation Result
+- ✅ Correct: X
+- ❌ Wrong: Y
+- 🧠 Score: X/Y
+
+Then list:
+### 📋 Question-wise Feedback
+1. **Question**: ...
+   - 🧑‍🎓 Your Answer: ...
+   - ✅ Correct Answer: ...
+   - 📊 Result: Correct ❎ / ✅
+
+Here is the quiz data:
+${JSON.stringify(questionsWithUserAnswers)}
+    `;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
@@ -47,3 +65,4 @@ export const submitQuiz = async (req, res) => {
     res.status(500).json({ error: "Quiz evaluation failed" });
   }
 };
+

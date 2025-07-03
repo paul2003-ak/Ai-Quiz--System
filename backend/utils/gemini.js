@@ -5,16 +5,25 @@ configDotenv();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const generateQuiz = async (topic, number) => {
-    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
-  const prompt = `Generate ${number} multiple choice questions on the topic "${topic}". Each question should have 4 options and mention the correct answer clearly. Format it as pure JSON like this:
-  [
-    {
-      "question": "...",
-      "options": ["A", "B", "C", "D"],
-      "answer": "..."
-    }
-  ]`;
+  const prompt = `You are a professional quiz maker. Generate ${number} high-quality, unique multiple-choice questions on the topic "${topic}". Each question must:
+
+1. Be strictly related to the topic.
+2. Include 4 options.
+3. Have only one correct answer.
+4. Clearly mention the correct answer.
+
+Format your output strictly in this JSON format:
+
+[
+  {
+    "question": "What is ...?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "answer": "Option A"
+  }
+]
+Only return the JSON array, no explanations or markdown.`;
 
   const result = await model.generateContent(prompt);
   const text = result.response.text();

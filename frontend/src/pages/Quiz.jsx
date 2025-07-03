@@ -1,4 +1,3 @@
-// src/pages/Quiz.jsx
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -8,15 +7,23 @@ const Quiz = () => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(60); // You can make this dynamic
-  const [submitted, setSubmitted] = useState(false); // ✅ Prevent multiple submits
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
   const { serverUrl } = useContext(authDataContext);
 
   useEffect(() => {
     const data = localStorage.getItem("questions");
-    if (data) setQuestions(JSON.parse(data));
-    else navigate("/");
+    if (data) {
+      const parsed = JSON.parse(data);
+      setQuestions(parsed);
+
+      // ✅ Set timer dynamically: e.g., 30 sec per question
+      const secondsPerQ = 30;
+      setTimeLeft(parsed.length * secondsPerQ);
+    } else {
+      navigate("/");
+    }
   }, [navigate]);
 
   useEffect(() => {
@@ -24,9 +31,7 @@ const Quiz = () => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          if (!submitted) {
-            handleSubmit(); // ✅ Only submit once
-          }
+          if (!submitted) handleSubmit(); // Auto submit on timeout
           return 0;
         }
         return prev - 1;
@@ -55,14 +60,17 @@ const Quiz = () => {
 
   const handleSubmit = async () => {
     if (submitted) return;
-    setSubmitted(true); // ✅ Mark as submitted to prevent repeat
+    setSubmitted(true);
+
     try {
       const res = await axios.post(
         serverUrl + "/api/quiz/submit",
         { questionsWithUserAnswers: answers },
         { withCredentials: true }
       );
-      localStorage.setItem("result", res.data.evaluation);
+
+      // ✅ Save result as JSON string (IMPORTANT)
+      localStorage.setItem("result", JSON.stringify(res.data.evaluation));
       navigate("/result");
     } catch (err) {
       console.log(err);
